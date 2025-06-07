@@ -1,0 +1,139 @@
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+    opacity: 0;
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+    opacity: 1;
+  }
+}
+@keyframes float-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}
+.animate-float-fade-in {
+  animation: float-fade-in 0.8s ease-out forwards;
+  opacity: 0;
+}
+.animate-float-fade-in.delay-1 {
+  animation-delay: 0.2s;
+}
+.animate-float-fade-in.delay-2 {
+  animation-delay: 0.4s;
+}
+.animate-float-fade-in.delay-3 {
+  animation-delay: 0.6s;
+}
+.title-bounce {
+  animation: float-fade-in 1s ease-out;
+}
+.button-light-interactive {
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+}
+.button-light-interactive:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+.button-light-interactive:active {
+  transform: translateY(0px) scale(1);
+  box-shadow: 0 1px 2px rgba(0, 123, 255, 0.15);
+}
+.product-card-light {
+  border: 1px solid #e0f2fe;
+  box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.1),
+    0 2px 4px -1px rgba(14, 165, 233, 0.06);
+  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+}
+.product-card-light:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.15),
+    0 4px 6px -2px rgba(14, 165, 233, 0.1);
+}
+.product-card-image-light {
+  border-bottom: 1px solid #e0f2fe;
+}
+@keyframes thumb-pulse {
+  0% {
+    background-color: rgba(14, 165, 233, 0.5);
+  }
+  50% {
+    background-color: rgba(14, 165, 233, 0.8);
+  }
+  100% {
+    background-color: rgba(14, 165, 233, 0.5);
+  }
+}
+@keyframes thumb-pulse-dark {
+  0% {
+    background-color: rgba(56, 189, 248, 0.5);
+  }
+  50% {
+    background-color: rgba(56, 189, 248, 0.8);
+  }
+  100% {
+    background-color: rgba(56, 189, 248, 0.5);
+  }
+}
+.custom-scrollbar {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.3s ease-out;
+}
+.custom-scrollbar:hover {
+  scrollbar-color: rgba(0, 0, 0, 0.4) transparent;
+}
+.dark .custom-scrollbar:hover {
+  scrollbar-color: rgba(255, 255, 255, 0.4) transparent;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+  transition: width 0.3s ease-in-out;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 10px;
+  transition: background-color 0.3s ease-in-out;
+}
+.custom-scrollbar:hover::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  animation: thumb-pulse 2.5s infinite;
+}
+.dark .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  animation: thumb-pulse-dark 2.5s infinite;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  animation-play-state: paused;
+  background-color: rgba(14, 165, 233, 0.9);
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  animation-play-state: paused;
+  background-color: rgba(56, 189, 248, 0.9);
+}
+.carousel-scroll-area::-webkit-scrollbar {
+  display: none;
+}
+.carousel-scroll-area {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
