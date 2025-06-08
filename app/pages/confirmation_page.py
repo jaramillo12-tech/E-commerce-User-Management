@@ -9,9 +9,9 @@ from typing import Union
 def confirmation_item_summary_row(
     item_dict: dict[str, Union[str, int, float]],
 ) -> rx.Component:
-    name = item_dict.get("name", "N/A").to(str)
-    quantity = item_dict.get("quantity", 0).to(int)
-    price = item_dict.get("price", 0.0).to(float)
+    name = item_dict["name"]
+    quantity = item_dict["quantity"].to(int)
+    price = item_dict["price"].to(float)
     item_total = price * quantity
     return rx.el.div(
         rx.el.div(

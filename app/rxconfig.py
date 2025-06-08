@@ -8,4 +8,6 @@ config = rx.Config(
     db_url=os.getenv(
         "DATABASE_URL", "sqlite:///./techstore.db"
     ),
+    backend_port=os.getenv("BACKEND_PORT", 8000),
+    frontend_port=os.getenv("FRONTEND_PORT", 3000),
 )
