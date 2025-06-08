@@ -10,6 +10,7 @@ def product_carousel(
     scroll_area_id = (
         f"carousel-{category.lower().replace(' ', '-')}"
     )
+    auto_scroll_script = f"\n        const scrollArea = document.getElementById('{scroll_area_id}');\n        if (scrollArea && !scrollArea.dataset.autoScroll) {{\n            scrollArea.dataset.autoScroll = 'true';\n            \n            let autoScrollInterval;\n\n            const scrollAction = () => {{\n                if (document.hidden) return;\n                const scrollEnd = scrollArea.scrollWidth - scrollArea.clientWidth;\n                if (scrollArea.scrollLeft >= scrollEnd - 1) {{\n                    scrollArea.scrollTo({{ left: 0, behavior: 'smooth' }});\n                }} else {{\n                    scrollArea.scrollBy({{ left: 350, behavior: 'smooth' }});\n                }}\n            }};\n\n            const startScrolling = () => {{\n                clearInterval(autoScrollInterval);\n                autoScrollInterval = setInterval(scrollAction, 3000);\n            }};\n\n            const stopScrolling = () => {{\n                clearInterval(autoScrollInterval);\n            }};\n\n            scrollArea.addEventListener('mouseenter', stopScrolling);\n            scrollArea.addEventListener('mouseleave', startScrolling);\n            \n            document.addEventListener('visibilitychange', () => {{\n                if (document.hidden) {{\n                    stopScrolling();\n                }} else {{\n                    startScrolling();\n                }}\n            }});\n\n            startScrolling();\n        }}\n    "
     return rx.el.div(
         rx.el.h3(
             category,
@@ -37,7 +38,7 @@ def product_carousel(
                             product_card(
                                 product, is_sponsored=False
                             ),
-                            class_name="w-72 flex-shrink-0",
+                            class_name="w-72 flex-shrink-0 transform transition-transform duration-300 hover:scale-105",
                         ),
                     ),
                     class_name="flex space-x-6 px-4",
@@ -58,5 +59,6 @@ def product_carousel(
             ),
             class_name="relative group",
         ),
+        rx.el.script(auto_scroll_script),
         class_name="mb-12",
     )
