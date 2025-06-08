@@ -10,3 +10,4 @@ psycopg2
 python-dotenv
 python-multipart
 pdf2image
+openai
