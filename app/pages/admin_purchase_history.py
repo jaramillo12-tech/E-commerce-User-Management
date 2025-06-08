@@ -4,18 +4,7 @@ from app.states.auth_state import AuthState
 from app.states.theme_state import ThemeState
 from app.states.admin_purchase_history_state import (
     AdminPurchaseHistoryState,
-    PurchaseGroup,
 )
-
-
-def purchase_item_detail(item: dict) -> rx.Component:
-    return rx.el.div(
-        rx.el.p(
-            f"{item['name']} (Cant: {item['quantity_sold']}) - {item['price_at_sale']:,.0f} COP c/u",
-            class_name="text-xs",
-        ),
-        class_name="ml-4",
-    )
 
 
 def purchase_group_row(pg_formatted: dict) -> rx.Component:

@@ -1,7 +1,14 @@
 import reflex as rx
 from sqlmodel import create_engine, SQLModel
 from rxconfig import config as app_config
-from app.models.models import Product, User, Review
+from app.models.models import (
+    Product,
+    User,
+    Review,
+    Complaint,
+    Purchase,
+    PurchaseItem,
+)
 
 DATABASE_URL = app_config.db_url
 if not DATABASE_URL:

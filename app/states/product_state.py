@@ -430,7 +430,6 @@ class ProductState(rx.State):
             self.selected_product
             and self.selected_product_quantity > 0
         ):
-            cart_s = await self.get_state(CartState)
             if self.selected_product.id is None:
                 yield rx.toast(
                     "Error: ID de producto no válido.",
@@ -441,7 +440,6 @@ class ProductState(rx.State):
                 "product_id": self.selected_product.id,
                 "name": self.selected_product.name,
                 "price": self.selected_product.price,
-                "quantity": self.selected_product_quantity,
                 "image_url": self.selected_product.image_url,
                 "stock": self.selected_product.stock,
             }
@@ -468,8 +466,6 @@ class ProductState(rx.State):
 
     @rx.var
     def filtered_products(self) -> list[ProductModel]:
-        if not self.products:
-            return []
         products_to_filter = self.products
         if self.selected_category != "All":
             products_to_filter = [

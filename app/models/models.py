@@ -65,6 +65,48 @@ class User(SQLModel, table=True):
     created_at: datetime.datetime = Field(
         default_factory=datetime.datetime.utcnow
     )
+    purchases: list["Purchase"] = Relationship(
+        back_populates="user"
+    )
+
+
+class PurchaseItem(SQLModel, table=True):
+    id: Optional[int] = Field(
+        default=None, primary_key=True
+    )
+    purchase_id: int = Field(foreign_key="purchase.id")
+    product_id: int
+    name: str
+    quantity: int
+    price_at_sale: float
+    purchase: Optional["Purchase"] = Relationship(
+        back_populates="items"
+    )
+
+
+class Purchase(SQLModel, table=True):
+    id: Optional[int] = Field(
+        default=None, primary_key=True
+    )
+    user_id: Optional[int] = Field(
+        default=None, foreign_key="user.id"
+    )
+    customer_name: str
+    customer_email: str
+    customer_address: str
+    customer_document_id: str
+    total_price: float
+    invoice_number: str
+    invoice_pdf_path: str
+    created_at: datetime.datetime = Field(
+        default_factory=datetime.datetime.utcnow
+    )
+    items: list["PurchaseItem"] = Relationship(
+        back_populates="purchase", cascade_delete=True
+    )
+    user: Optional["User"] = Relationship(
+        back_populates="purchases"
+    )
 
 
 class CartItem(rx.Base):

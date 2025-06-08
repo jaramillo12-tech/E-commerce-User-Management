@@ -213,6 +213,9 @@ def admin_statistics_page() -> rx.Component:
                 "container mx-auto py-10 px-4 min-h-screen pt-24 bg-slate-900",
             ),
         ),
-        on_mount=AuthState.check_admin_session,
+        on_mount=[
+            AuthState.check_admin_session,
+            AdminStatsState.load_sales_summary,
+        ],
         class_name=ThemeState.current_theme,
     )

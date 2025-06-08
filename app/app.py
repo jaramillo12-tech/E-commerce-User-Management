@@ -37,29 +37,7 @@ from app.database import create_db_and_tables
 
 
 def index() -> rx.Component:
-    return rx.fragment(
-        home_page(),
-        rx.el.div(
-            AdminStatsState.sales_records.length(),
-            class_name="hidden",
-        ),
-        rx.el.div(
-            AdminPurchaseHistoryState.purchase_groups.length(),
-            class_name="hidden",
-        ),
-        rx.el.div(
-            AdminProductState.products_for_admin.length(),
-            class_name="hidden",
-        ),
-        rx.el.div(
-            FeedbackState.review_submitted_trigger.to_string(),
-            class_name="hidden",
-        ),
-        rx.el.div(
-            InvoiceState.invoice_pdf_path,
-            class_name="hidden",
-        ),
-    )
+    return home_page()
 
 
 create_db_and_tables()

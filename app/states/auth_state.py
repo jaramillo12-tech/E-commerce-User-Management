@@ -78,17 +78,11 @@ class AuthState(rx.State):
             self.error_message = (
                 "Todos los campos son obligatorios."
             )
-            self.username = _username
-            self.email = _email
-            self.password = _password
             return
-        self.username = _username
-        self.email = _email
-        self.password = _password
         with Session(engine) as session:
             existing_user_by_name = session.exec(
                 select(User).where(
-                    User.username == self.username
+                    User.username == _username
                 )
             ).first()
             if existing_user_by_name:
@@ -97,14 +91,13 @@ class AuthState(rx.State):
                 )
                 return
             existing_user_by_email = session.exec(
-                select(User).where(User.email == self.email)
+                select(User).where(User.email == _email)
             ).first()
             if existing_user_by_email:
                 self.error_message = "El correo electrónico ya está registrado."
                 return
             hashed_password_bytes = bcrypt.hashpw(
-                self.password.encode("utf-8"),
-                bcrypt.gensalt(),
+                _password.encode("utf-8"), bcrypt.gensalt()
             )
             hashed_password_str = (
                 hashed_password_bytes.decode("utf-8")
@@ -118,8 +111,8 @@ class AuthState(rx.State):
             )
             is_first_user = user_count == 0
             new_user = User(
-                username=self.username,
-                email=self.email,
+                username=_username,
+                email=_email,
                 hashed_password=hashed_password_str,
                 is_admin=is_first_user,
             )
@@ -143,74 +136,15 @@ class AuthState(rx.State):
             self.error_message = (
                 "Usuario y contraseña son obligatorios."
             )
-            self.username = _username
-            self.password = _password
             return
-        self.username = _username
-        self.password = _password
-        if (
-            self.username == "admin"
-            and self.password == "adminpass"
-        ):
-            with Session(engine) as session:
-                admin_user_model = session.exec(
-                    select(User).where(
-                        User.username == "admin"
-                    )
-                ).first()
-                if not admin_user_model:
-                    admin_email_candidate = (
-                        "admin@techstore.com"
-                    )
-                    email_exists = session.exec(
-                        select(User).where(
-                            User.email
-                            == admin_email_candidate
-                        )
-                    ).first()
-                    if email_exists:
-                        admin_email_candidate = f"admin_{int(time.time())}@techstore.com"
-                    hashed_password_bytes = bcrypt.hashpw(
-                        "adminpass".encode("utf-8"),
-                        bcrypt.gensalt(),
-                    )
-                    hashed_password_str = (
-                        hashed_password_bytes.decode(
-                            "utf-8"
-                        )
-                    )
-                    admin_user_model = User(
-                        username="admin",
-                        email=admin_email_candidate,
-                        hashed_password=hashed_password_str,
-                        is_admin=True,
-                    )
-                    session.add(admin_user_model)
-                    session.commit()
-                    session.refresh(admin_user_model)
-                elif not admin_user_model.is_admin:
-                    admin_user_model.is_admin = True
-                    session.add(admin_user_model)
-                    session.commit()
-                self.is_logged_in = True
-                self.is_admin_user = True
-                self.username = admin_user_model.username
-                self.email = admin_user_model.email
-                self.password = ""
-                yield rx.redirect("/")
-                yield rx.toast(
-                    "¡Bienvenido, Administrador!",
-                    duration=3000,
-                )
-                return
         with Session(engine) as session:
             user_model = session.exec(
                 select(User).where(
-                    User.username == self.username
+                    User.username == _username
                 )
             ).first()
             if user_model and bcrypt.checkpw(
-                self.password.encode("utf-8"),
+                _password.encode("utf-8"),
                 user_model.hashed_password.encode("utf-8"),
             ):
                 self.is_logged_in = True
@@ -253,7 +187,6 @@ class AuthState(rx.State):
 
     @rx.event
     def check_admin_session(self):
-        current_path = self.router.page.path
         if not self.is_logged_in:
             yield rx.redirect("/sign_in")
             yield rx.toast(
@@ -297,24 +230,15 @@ class AuthState(rx.State):
                 self.recovery_message = "Por favor, ingresa tu correo o número de celular."
                 return
         with Session(engine) as session:
-            user_exists = False
-            if self.recovery_method == "email":
-                user_exists = (
-                    session.exec(
-                        select(User).where(
-                            User.email
-                            == self.recovery_target
-                        )
-                    ).first()
-                    is not None
-                )
-            elif self.recovery_method == "phone":
-                async with self:
-                    self.recovery_message = "La recuperación por teléfono no está implementada completamente con base de datos real."
-                user_exists = True
-            if self.recovery_method == "email" and (
-                not user_exists
-            ):
+            user_exists = (
+                session.exec(
+                    select(User).where(
+                        User.email == self.recovery_target
+                    )
+                ).first()
+                is not None
+            )
+            if not user_exists:
                 async with self:
                     self.recovery_message = "No se encontró una cuenta con ese correo electrónico."
                 yield rx.toast(
@@ -325,15 +249,12 @@ class AuthState(rx.State):
             generated_code = await _dummy_email_service.send_verification_code(
                 self.recovery_target
             )
-            async with self:
-                self.generated_reset_code = generated_code
-        elif self.recovery_method == "phone":
+        else:
             generated_code = await _dummy_phone_service.send_verification_code(
                 self.recovery_target
             )
-            async with self:
-                self.generated_reset_code = generated_code
         async with self:
+            self.generated_reset_code = generated_code
             if self.generated_reset_code:
                 self.recovery_step = "verify"
                 self.recovery_message = f"Se ha enviado un código de verificación a {self.recovery_target}."
@@ -352,29 +273,11 @@ class AuthState(rx.State):
             "reset_code_input_field", ""
         ).strip()
         self.recovery_message = ""
-        verified = False
-        if self.recovery_method == "email":
-            verified = (
-                await _dummy_email_service.verify_code(
-                    self.recovery_target,
-                    self.reset_code_input,
-                )
-            )
-        elif self.recovery_method == "phone":
-            verified = (
-                await _dummy_phone_service.verify_code(
-                    self.recovery_target,
-                    self.reset_code_input,
-                )
-            )
-        if (
-            verified
-            and self.reset_code_input
-            and (
-                self.reset_code_input
-                == self.generated_reset_code
-            )
-        ):
+        verified = (
+            self.reset_code_input
+            == self.generated_reset_code
+        )
+        if verified:
             self.recovery_step = "reset"
             self.recovery_message = "Código verificado. Ahora puedes restablecer tu contraseña."
             yield rx.toast(
@@ -413,13 +316,11 @@ class AuthState(rx.State):
             )
             return
         with Session(engine) as session:
-            user_to_update = None
-            if self.recovery_method == "email":
-                user_to_update = session.exec(
-                    select(User).where(
-                        User.email == self.recovery_target
-                    )
-                ).first()
+            user_to_update = session.exec(
+                select(User).where(
+                    User.email == self.recovery_target
+                )
+            ).first()
             if user_to_update:
                 hashed_password_bytes = bcrypt.hashpw(
                     self.new_password_recovery.encode(
@@ -479,25 +380,11 @@ class AuthState(rx.State):
             self.change_user_details_message = (
                 "Debes ingresar tu contraseña actual."
             )
-            self.change_current_password = ""
-            self.change_new_username = _change_new_username
-            self.change_new_password = _change_new_password
-            self.change_confirm_new_password = (
-                _change_confirm_new_password
-            )
             return
         if not _change_new_username and (
             not _change_new_password
         ):
             self.change_user_details_message = "Debes ingresar un nuevo nombre de usuario o una nueva contraseña."
-            self.change_current_password = (
-                _change_current_password
-            )
-            self.change_new_username = _change_new_username
-            self.change_new_password = _change_new_password
-            self.change_confirm_new_password = (
-                _change_confirm_new_password
-            )
             return
         if (
             _change_new_password
@@ -507,21 +394,7 @@ class AuthState(rx.State):
             self.change_user_details_message = (
                 "Las nuevas contraseñas no coinciden."
             )
-            self.change_current_password = (
-                _change_current_password
-            )
-            self.change_new_username = _change_new_username
-            self.change_new_password = ""
-            self.change_confirm_new_password = ""
             return
-        self.change_current_password = (
-            _change_current_password
-        )
-        self.change_new_username = _change_new_username
-        self.change_new_password = _change_new_password
-        self.change_confirm_new_password = (
-            _change_confirm_new_password
-        )
         with Session(engine) as session:
             current_user = session.exec(
                 select(User).where(
@@ -529,9 +402,7 @@ class AuthState(rx.State):
                 )
             ).first()
             if not current_user or not bcrypt.checkpw(
-                self.change_current_password.encode(
-                    "utf-8"
-                ),
+                _change_current_password.encode("utf-8"),
                 current_user.hashed_password.encode(
                     "utf-8"
                 ),
@@ -539,34 +410,28 @@ class AuthState(rx.State):
                 self.change_user_details_message = (
                     "La contraseña actual es incorrecta."
                 )
-                self.change_current_password = ""
                 return
             changes_made = False
             if (
-                self.change_new_username
-                and self.change_new_username
+                _change_new_username
+                and _change_new_username
                 != current_user.username
             ):
                 existing_user_by_new_name = session.exec(
                     select(User).where(
                         User.username
-                        == self.change_new_username
+                        == _change_new_username
                     )
                 ).first()
                 if existing_user_by_new_name:
                     self.change_user_details_message = "El nuevo nombre de usuario ya está en uso."
-                    self.change_new_username = ""
                     return
-                current_user.username = (
-                    self.change_new_username
-                )
-                self.username = self.change_new_username
+                current_user.username = _change_new_username
+                self.username = _change_new_username
                 changes_made = True
-            if self.change_new_password:
+            if _change_new_password:
                 new_hashed_password_bytes = bcrypt.hashpw(
-                    self.change_new_password.encode(
-                        "utf-8"
-                    ),
+                    _change_new_password.encode("utf-8"),
                     bcrypt.gensalt(),
                 )
                 current_user.hashed_password = (
