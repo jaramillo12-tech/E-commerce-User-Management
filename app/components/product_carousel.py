@@ -10,7 +10,6 @@ def product_carousel(
     scroll_area_id = (
         f"carousel-{category.lower().replace(' ', '-')}"
     )
-    auto_scroll_script = f"\n        const scrollArea = document.getElementById('{scroll_area_id}');\n        if (scrollArea && !scrollArea.dataset.autoScroll) {{\n            scrollArea.dataset.autoScroll = 'true';\n            \n            let autoScrollInterval;\n\n            const scrollAction = () => {{\n                if (document.hidden) return;\n                const scrollEnd = scrollArea.scrollWidth - scrollArea.clientWidth;\n                if (scrollArea.scrollLeft >= scrollEnd - 1) {{\n                    scrollArea.scrollTo({{ left: 0, behavior: 'smooth' }});\n                }} else {{\n                    scrollArea.scrollBy({{ left: 350, behavior: 'smooth' }});\n                }}\n            }};\n\n            const startScrolling = () => {{\n                clearInterval(autoScrollInterval);\n                autoScrollInterval = setInterval(scrollAction, 3000);\n            }};\n\n            const stopScrolling = () => {{\n                clearInterval(autoScrollInterval);\n            }};\n\n            scrollArea.addEventListener('mouseenter', stopScrolling);\n            scrollArea.addEventListener('mouseleave', startScrolling);\n            \n            document.addEventListener('visibilitychange', () => {{\n                if (document.hidden) {{\n                    stopScrolling();\n                }} else {{\n                    startScrolling();\n                }}\n            }});\n\n            startScrolling();\n        }}\n    "
     return rx.el.div(
         rx.el.h3(
             category,
@@ -45,7 +44,7 @@ def product_carousel(
                 ),
                 id=scroll_area_id,
                 class_name="flex overflow-x-auto carousel-scroll-area pb-4",
-                style={"scroll-snap-type": "x mandatory"},
+                style={"scrollSnapType": "x mandatory"},
             ),
             rx.el.button(
                 rx.icon(
@@ -59,6 +58,8 @@ def product_carousel(
             ),
             class_name="relative group",
         ),
-        rx.el.script(auto_scroll_script),
+        rx.el.script(
+            f"\n            (() => {{\n                const scrollArea = document.getElementById('{scroll_area_id}');\n                if (!scrollArea || scrollArea.dataset.autoScroll) return;\n                scrollArea.dataset.autoScroll = 'true';\n\n                let autoScrollInterval;\n\n                const scrollAction = () => {{\n                    if (document.hidden) return;\n                    const scrollEnd = scrollArea.scrollWidth - scrollArea.clientWidth;\n                    if (scrollArea.scrollLeft >= scrollEnd - 1) {{\n                        scrollArea.scrollTo({{ left: 0, behavior: 'smooth' }});\n                    }} else {{\n                        scrollArea.scrollBy({{ left: 350, behavior: 'smooth' }});\n                    }}\n                }};\n\n                const startScrolling = () => {{\n                    clearInterval(autoScrollInterval);\n                    autoScrollInterval = setInterval(scrollAction, 3000);\n                }};\n\n                const stopScrolling = () => {{\n                    clearInterval(autoScrollInterval);\n                }};\n\n                scrollArea.addEventListener('mouseenter', stopScrolling);\n                scrollArea.addEventListener('mouseleave', startScrolling);\n                \n                document.addEventListener('visibilitychange', () => {{\n                    if (document.hidden) {{\n                        stopScrolling();\n                    }} else {{\n                        startScrolling();\n                    }}\n                }});\n\n                startScrolling();\n            }})();\n            "
+        ),
         class_name="mb-12",
     )
